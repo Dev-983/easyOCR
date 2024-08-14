@@ -45,7 +45,7 @@ def url():
               for img in pdfimage:
                 result = reader.readtext(img)
                 for  text in result:
-                pdftext+=text[1]
+                            pdftext+=text[1]
 
             # reader = PdfReader(pdf_path)
             # pdf_content = ''
