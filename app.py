@@ -33,19 +33,26 @@ def url():
             reader = easyocr.Reader(['en'])
             images = convert_from_path(pdf_path)
             pdftext=''
+            pdfimage= []
             output_dir = "pdfimage"
             os.makedirs(output_dir, exist_ok=True)
             for i, image in enumerate(images):
               image_path = os.path.join(output_dir, f'page_{i + 1}.png')
               image.save(image_path, 'PNG')
-              result = reader.readtext(image_path)
-              for (bbox, text, prob) in result:
-                pdftext+=text
+              pdfimage.append(image_path)
+
+
+              for img in pdfimage:
+                result = reader.readtext(img)
+                for  text in result:
+                pdftext+=text[1]
+
             # reader = PdfReader(pdf_path)
             # pdf_content = ''
             # for page in reader.pages:
             #     pdf_content += page.extract_text() 
-            return jsonify({'response': pdftext})
+            delete_all_pdfImages()
+            return pdftext
         else:
             return "No URL provided", 400  # Return a message if no URL is provided
 
@@ -74,6 +81,7 @@ def index():
                 for page in reader.pages:
                     pdf_content += page.extract_text()    
                 #return pdf_content
+                delete_all_pdfs()
                 flash(f"PDF downloaded successfully and saved as\n {pdf_content}", "success")
             except requests.exceptions.RequestException as e:
                 flash(f"Failed to download PDF: {e}", "danger")
@@ -83,6 +91,27 @@ def index():
         return redirect(url_for('index'))
 
     return render_template('index.html')
+
+def delete_all_pdfImages():
+    folder_path = 'pdfimage'
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting file {file_path}: {e}")
+
+
+def delete_all_pdfs():
+    folder_path = 'pdf'
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting file {file_path}: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)
